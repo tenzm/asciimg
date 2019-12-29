@@ -8,6 +8,7 @@ import (
     // Side-effect import.
     // Сайд-эффект — добавление декодера PNG в пакет image.
     _ "image/png"
+    _ "image/jpeg"
     "os"
 )
 
@@ -28,12 +29,8 @@ func processPixel(c color.Color) rune {
     r, _, _, _ := gc.RGBA()
     r = r >> 8
 
-    // symbols := []rune("@%#*+=-:. ")
-
-    if r >= 128 {
-        return ' '
-    }
-    return '@'
+    // symbols := []rune("@80GCLft1i;:,. ")
+    return '0'
 }
 
 func convertToAscii(img image.Image) [][]rune {
