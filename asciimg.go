@@ -16,7 +16,12 @@ import (
 	"golang.org/x/image/draw"
 )
 
-var o = flag.String("o", "", "output into file")
+var (
+	o         = flag.String("o", "", "output into file")
+	is_scaled = flag.Bool("noscale", false, "scale option")
+	w         = flag.Int("w", 200, "wigth")
+	h         = flag.Int("h", 40, "heigh")
+)
 
 func scale(img image.Image, w int, h int) image.Image {
 	dstImg := image.NewRGBA(image.Rect(0, 0, w, h))
@@ -78,9 +83,15 @@ func main() {
 	imgName := flag.Arg(0)
 
 	img, err := decodeImageFile(imgName)
+
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 		os.Exit(1)
+	}
+
+	if *is_scaled == false && len(*o) == 0 {
+		newimg := scale(img, *w, *h)
+		img = newimg
 	}
 
 	textImg := convertToAscii(img)
