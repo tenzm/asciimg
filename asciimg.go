@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/buger/goterm"
 	"image"
 	"image/color"
 	_ "image/jpeg"
@@ -13,14 +14,30 @@ import (
 	_ "image/png"
 	"os"
 	// Внешняя зависимость.
+	"github.com/olekukonko/ts"
 	"golang.org/x/image/draw"
 )
+
+func getTermWidth() int {
+	term, _ := ts.GetSize()
+	if term.Col()-term.PosX() > 0 {
+		return term.Col() - term.PosX()
+	}
+	return goterm.Width()
+}
+
+func getTermHeigh() int {
+	if getTermWidth() > 0 {
+		return -1
+	}
+	return goterm.Height()
+}
 
 var (
 	o         = flag.String("o", "", "output into file")
 	is_scaled = flag.Bool("noscale", false, "scale option")
-	w         = flag.Int("w", 200, "wigth")
-	h         = flag.Int("h", 40, "heigh")
+	w         = flag.Int("w", getTermWidth(), "wigth")
+	h         = flag.Int("h", getTermHeigh(), "heigh")
 )
 
 func scale(img image.Image, w int, h int) image.Image {
@@ -83,6 +100,7 @@ func main() {
 	imgName := flag.Arg(0)
 
 	img, err := decodeImageFile(imgName)
+	kef := img.Bounds().Dy() / img.Bounds().Dx()
 
 	if err != nil {
 		fmt.Println("Error:", err.Error())
@@ -90,6 +108,9 @@ func main() {
 	}
 
 	if *is_scaled == false && len(*o) == 0 {
+		if *h == -1 {
+			*h = *w * kef * 45 / 100
+		}
 		newimg := scale(img, *w, *h)
 		img = newimg
 	}
