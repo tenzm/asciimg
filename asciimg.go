@@ -6,6 +6,8 @@ import (
 	"image"
 	"image/color"
 	_ "image/jpeg"
+	"io"
+
 	// Side-effect import.
 	// Сайд-эффект — добавление декодера PNG в пакет image.
 	_ "image/png"
@@ -13,6 +15,8 @@ import (
 	// Внешняя зависимость.
 	"golang.org/x/image/draw"
 )
+
+var o = flag.String("o", "", "output into file")
 
 func scale(img image.Image, w int, h int) image.Image {
 	dstImg := image.NewRGBA(image.Rect(0, 0, w, h))
@@ -36,8 +40,8 @@ func processPixel(c color.Color) rune {
 	r, _, _, _ := gc.RGBA()
 	r = r >> 8
 
-	// symbols := []rune("@80GCLft1i;:,. ")
-	return '0'
+	symbols := []rune("@80GCLft1i;:,. ")
+	return symbols[r/(256/uint32(len(symbols)-1))]
 }
 
 func convertToAscii(img image.Image) [][]rune {
@@ -52,6 +56,16 @@ func convertToAscii(img image.Image) [][]rune {
 		}
 	}
 	return textImg
+}
+
+func exportToFile(textImg [][]rune, writer io.Writer) error {
+	for i := range textImg {
+		for j := range textImg[i] {
+			fmt.Fprint(writer, string(textImg[i][j]))
+		}
+		fmt.Fprint(writer, "\n")
+	}
+	return nil
 }
 
 func main() {
@@ -70,10 +84,19 @@ func main() {
 	}
 
 	textImg := convertToAscii(img)
-	for i := range textImg {
-		for j := range textImg[i] {
-			fmt.Printf("%c", textImg[i][j])
+
+	if len(*o) > 0 {
+		w, err := os.Create(*o)
+		if err != nil {
+			os.Exit(1)
 		}
-		fmt.Println()
+		exportToFile(textImg, w)
+	} else {
+		for i := range textImg {
+			for j := range textImg[i] {
+				fmt.Printf("%c", textImg[i][j])
+			}
+			fmt.Println()
+		}
 	}
 }
